@@ -1,0 +1,23 @@
+{
+  "name": "project06",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@nutui/nutui": "^4.1.6",
+    "axios": "^1.5.0",
+    "pinia": "^2.1.6",
+    "vant": "^4.6.8",
+    "vue": "^3.3.4",
+    "vue-dark-switch": "^1.0.5",
+    "vue-router": "^4.2.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4",
+    "vite": "^4.4.9"
+  }
+}

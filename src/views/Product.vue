@@ -102,8 +102,6 @@ export default {
         }
 
         // Step 3: Save the product data
-        this.newProduct.out_of_stock = true
-
         await axios.post(`${API_URL}/products`, this.newProduct);
 
         // Reset the form fields

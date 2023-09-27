@@ -4,15 +4,20 @@
             <span class="title">端州香水柠檬(康乐店)</span>
             <span class="location"></span>
 
-            <span class="location"><van-icon name="location" /> 距离4.2km</span>
+            <div class="description">
+                <span class="location"><van-icon name="location" /> 距离4.2km</span>
+                <span class="location"><van-icon name="phone" />/<van-icon name="wechat" /> 13028809527</span>
+            </div>
         </div>
         <div class="right">
-            <van-tabs v-model:active="active" type="line" animated>
-                <van-tab title="🛵配送"></van-tab>
-                <van-tab title="🚚快递"></van-tab>
-            </van-tabs>
         </div>
     </div>
+    <!-- <div class="tab">
+        <van-tabs v-model:active="active" type="line" animated>
+            <van-tab title="🛵配送"></van-tab>
+            <van-tab title="🚚快递"></van-tab>
+        </van-tabs>
+    </div> -->
 </template>
 
 <script setup>
@@ -24,11 +29,11 @@ const checked = ref(true);
 <style lang="scss" scoped>
 .container {
     display: flex;
-    margin-top: 10px;
+    padding: 10px 0px;
+    width: 100%;
 }
 
 .left {
-    width: 40%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -37,18 +42,23 @@ const checked = ref(true);
 
 .title {
     color: var(--van-text-color);
-    font-size: var(--van-font-size-lg);
+    font-size: 19px;
+    font-weight: bold;
 }
 
 .location {
     color: var(--van-text-color-3);
     font-size: 13px;
+    margin-right: 10px;
+    margin-top: 3px;
+}
 
+.description {
+    display: flex;
 }
 
 .right {
     display: flex;
-    width: 60%;
     --van-tabs-line-height: 30px;
     align-items: center;
 }

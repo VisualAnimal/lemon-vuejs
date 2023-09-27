@@ -1,7 +1,6 @@
 <template>
   <Header></Header>
   <!-- <van-nav-bar title="标题" /> -->
-  <br>
   <div class="container">
     <div class="left">
       <van-sticky>
@@ -91,7 +90,7 @@ const state = reactive({
 
 .right {
   width: 75%;
-  --van-card-thumb-size: 90px;
+  --van-card-thumb-size: 100px;
   --van-card-font-size: 14px;
   --van-card-desc-color: var(--van-text-color-3);
   --van-card-background: #fff;

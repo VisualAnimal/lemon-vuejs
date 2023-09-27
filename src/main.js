@@ -8,7 +8,7 @@ import router from './router'
 
 // import Vant from "vant"
 import 'vant/lib/index.css';
-import { Tab } from 'vant';
+import { Button, Field, Popup, Tab } from 'vant';
 import { Tabs } from 'vant';
 import { Sidebar } from 'vant';
 import { SidebarItem } from 'vant';
@@ -37,5 +37,8 @@ app.use(Icon)
 app.use(Tag)
 app.use(Card)
 app.use(router)
+app.use(Button)
+app.use(Popup)
+app.use(Field)
 
 app.mount('#app')

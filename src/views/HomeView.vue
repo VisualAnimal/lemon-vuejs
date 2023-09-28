@@ -18,7 +18,7 @@
           <template v-for="tag in product.tags">
             <van-tag class="tag" plain type="primary">{{ tag }}</van-tag>
           </template>
-          <van-tag v-if="product.out_of_stock" class="tag" type="danger">补货中，可发快递</van-tag>
+          <van-tag v-if="product.out_of_stock" class="tag" type="warning">补货中，可发快递</van-tag>
 
         </template>
 

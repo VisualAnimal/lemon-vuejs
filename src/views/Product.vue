@@ -101,8 +101,8 @@ export default {
         }
 
         // Step 3: Save the product data
-        // await axios.post(`${API_URL}/products`, this.newProduct);
-        console.log(this.newProduct);
+        await axios.post(`${API_URL}/products`, this.newProduct);
+        // console.log(this.newProduct);
 
         // Reset the form fields
         this.newProduct = {

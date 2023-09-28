@@ -26,27 +26,26 @@
             <input v-model="item.updatedName">
             <input v-model="item.updatedDescription">
             <input v-model="item.updatedPrice">
-            
+            <label>
+              <input type="checkbox" v-model="item.out_of_stock"> 产品缺货
+            </label>
+
             <!-- 输入框用于编辑标签 -->
             <div>
-              <input
-                v-for="(tag, index) in item.updatedTags"
-                v-model="item.updatedTags[index]"
-                :key="index"
-              >
+              <input v-for="(tag, index) in item.updatedTags" v-model="item.updatedTags[index]" :key="index">
               <button @click="addTagForItem(item)">添加标签</button>
               <button @click="removeTagForItem(item, index)">删除标签</button>
             </div>
-            
+
             <!-- 图片上传 -->
             <input type="file" @change="updateItemImage(item)">
-            
+
             <button @click="updateProduct(item)">保存</button>
           </template>
-          
+
           <!-- 如果不在编辑模式，则显示产品属性和编辑按钮 -->
           <template v-else>
-            <img v-if="item.imageUrl" :src="'http://45.207.55.130:3000/xiaoman/' + item.imageUrl" alt="">
+            <img class="images" v-if="item.imageUrl" :src="'http://45.207.55.130:3000/xiaoman/' + item.imageUrl" alt="">
             {{ `` }} -{{ item.name }} - {{ item.description }} - {{ item.price }}
             <button @click="deleteProduct(item._id)">删除</button>
             <button @click="activateEditMode(item)">编辑</button>
@@ -102,7 +101,8 @@ export default {
         }
 
         // Step 3: Save the product data
-        await axios.post(`${API_URL}/products`, this.newProduct);
+        // await axios.post(`${API_URL}/products`, this.newProduct);
+        console.log(this.newProduct);
 
         // Reset the form fields
         this.newProduct = {
@@ -155,6 +155,7 @@ export default {
           name: item.updatedName,
           description: item.updatedDescription,
           price: item.updatedPrice,
+          out_of_stock: item.out_of_stock
           // 添加其他属性的更新
         });
         item.editing = false;
@@ -173,40 +174,40 @@ export default {
       this.newProduct.tags.splice(index, 1);
     },
     // 更新单个产品的标签
-  addTagForItem(item) {
-    if (item.updatedTagsInput.trim() !== '') {
-      item.updatedTags.push(item.updatedTagsInput);
-      item.updatedTagsInput = '';
-    }
-  },
+    addTagForItem(item) {
+      if (item.updatedTagsInput.trim() !== '') {
+        item.updatedTags.push(item.updatedTagsInput);
+        item.updatedTagsInput = '';
+      }
+    },
 
-  // 删除单个产品的标签
-  removeTagForItem(item, index) {
-    item.updatedTags.splice(index, 1);
-  },
+    // 删除单个产品的标签
+    removeTagForItem(item, index) {
+      item.updatedTags.splice(index, 1);
+    },
 
-  // 更新单个产品的图片
-  updateItemImage(item) {
-    const formData = new FormData();
-    const imageFile = this.$refs.productImage.files[0];
-    if (imageFile) {
-      formData.append('file', imageFile);
-      // 发送文件上传请求，更新 item 的 imageUrl
-      axios.post(`${API_URL}/upload/album`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then(response => {
-        if (response.data.success) {
-          item.imageUrl = response.data.fileName;
-        }
-      })
-      .catch(error => {
-        console.error('上传图片错误:', error);
-      });
-    }
-  },
+    // 更新单个产品的图片
+    updateItemImage(item) {
+      const formData = new FormData();
+      const imageFile = this.$refs.productImage.files[0];
+      if (imageFile) {
+        formData.append('file', imageFile);
+        // 发送文件上传请求，更新 item 的 imageUrl
+        axios.post(`${API_URL}/upload/album`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+          .then(response => {
+            if (response.data.success) {
+              item.imageUrl = response.data.fileName;
+            }
+          })
+          .catch(error => {
+            console.error('上传图片错误:', error);
+          });
+      }
+    },
   },
   mounted() {
     this.fetchProducts();
@@ -214,4 +215,9 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.images {
+  width: 100px;
+  height: 100px;
+}
+</style>

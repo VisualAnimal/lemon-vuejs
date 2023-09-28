@@ -8,7 +8,7 @@ import router from './router'
 
 // import Vant from "vant"
 import 'vant/lib/index.css';
-import { Button, Field, Popup, Tab } from 'vant';
+import { Button, Cell, CellGroup, Field, Popup, Radio, RadioGroup, Switch, Tab } from 'vant';
 import { Tabs } from 'vant';
 import { Sidebar } from 'vant';
 import { SidebarItem } from 'vant';
@@ -40,5 +40,10 @@ app.use(router)
 app.use(Button)
 app.use(Popup)
 app.use(Field)
+app.use(Cell)
+app.use(CellGroup)
+app.use(Switch)
+app.use(Radio)
+app.use(RadioGroup)
 
 app.mount('#app')

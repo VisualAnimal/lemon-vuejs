@@ -11,52 +11,78 @@
         </div>
         <div class="right">
             <!-- 使用v-for迭代渲染每个产品的卡片 -->
-            <van-card v-for="product in products.value" :price="product.price" :desc="product.description"
-                :title="product.name" :thumb="'http://45.207.55.130:3000/xiaoman/' + product.imageUrl">
-                <template v-if="product.description" #desc>
-                    <div class="desc" @click="() => showEditDescriptionPopup(product)">{{ product.description }}</div>
-                    <van-popup v-model:show="product.showEditDescription" position="top" :key="product._id">
-                        <van-field v-model="editDescription" label="描述" placeholder="输入产品描述"
-                            @keyup.enter="() => saveDescription(product)" />
-                        <van-button @click="() => saveDescription(product)">保存描述</van-button>
-                    </van-popup>
-                </template>
-                <template else #desc>
-                    <div class="desc" @click="() => showEditDescriptionPopup(product)">添加描述内容</div>
-                    <van-popup v-model:show="product.showEditDescription" position="top" :key="product._id">
-                        <van-field v-model="editDescription" label="描述" placeholder="输入产品描述"
-                            @keyup.enter="() => saveDescription(product)" />
-                        <van-button @click="() => saveDescription(product)">保存描述</van-button>
-                    </van-popup>
-                </template>
-
-
+            <van-card @click="openEditPopup(product)" v-for="product in products.value" :price="product.price"
+                :desc="product.description" :title="product.name"
+                :thumb="'http://45.207.55.130:3000/xiaoman/' + product.imageUrl">
                 <template #tags>
                     <template v-for="(tag, index) in product.tags">
-                        <van-tag class="tag" plain closeable @close="() => deleteTag(product, index)" type="primary">{{
-                            tag
-                        }}</van-tag>
+                        <van-tag v-if="tag.plain == false" :type="tag.type">{{ tag.name }}</van-tag>
+                        <van-tag v-else plain :type="tag.type">{{ tag.name }}</van-tag>
+                        <!-- <van-tag class="tag" plain type="primary">{{ tag.name }}</van-tag> -->
                     </template>
-                    <van-tag class="tag" type="success" @click="() => showPopup(product)">添加标签</van-tag>
-                    <!-- <van-tag class="tag" type="success"  @click="()=>showAddTagPopup.value = true">添加标签</van-tag> -->
-                    <van-popup v-model:show="product.showPopup" position="top">
-                        <van-field v-model="newTag" label="新标签" placeholder="输入新标签名称" @keyup.enter="addTag(product)" />
-                        <van-button @click="addTag(product)">添加标签</van-button>
-                    </van-popup>
                 </template>
             </van-card>
+            <!-- 编辑popup -->
+            <van-popup v-model:show="showEditPopup" position="top">
+                <van-field v-model="editProduct.name" label="名称" />
+                <van-field v-model="editProduct.description" label="描述" />
+                <van-field v-model="editProduct.price" label="价格" />
+                <!-- 这里可以添加一个图片上传的组件 -->
+                <!-- <van-field v-model="tagsString" label="标签" /> -->
+                <van-cell title="标签" value="内容">
+                    <template #value>
+                        <template v-for="(tag, index) in editProduct.tags" :key="index">
+                            <van-tag @close="deleteTag(index)" v-if="tag.plain" plain class="tag" :type="tag.type"
+                                closeable>{{ tag.name }}</van-tag>
+                            <!-- <van-tag v-if="tag.type" plain class="tag" :type="tag.type" closeable>{{ tag.name }}</van-tag> -->
+                            <van-tag @close="deleteTag(index)" v-else :type="tag.type" class="tag" closeable>{{ tag.name
+                            }}</van-tag>
+                        </template>
+                        <van-tag @click="openAddTagPopup" type="success">添加标签</van-tag>
+                    </template>
+                </van-cell>
+                <van-popup v-model:show="showAddTagPopup" position="top">
+                    <van-field v-model="newTagName" label="标签名称" input-align="right" />
+                    <van-cell-group>
+                        <van-cell title="标签颜色">
+                            <template #value>
+                                <van-radio-group direction="horizontal" v-model="newTagColor">
+                                    <van-radio name="primary" label="primary">蓝色</van-radio>
+                                    <van-radio name="success" label="success">绿色</van-radio>
+                                    <van-radio name="danger" label="danger">红色</van-radio>
+                                    <van-radio name="warning" label="warning">橙色</van-radio>
+                                </van-radio-group>
+                            </template>
+                        </van-cell>
+                        <van-cell title="空心标签">
+                            <template #value>
+                                <van-switch v-model="newTagPlain" size="24px" />
+                            </template>
+                        </van-cell>
+                        <van-cell title="预览">
+                            <template #value>
+                                <van-tag v-if="newTagPlain == false" :type="newTagColor">{{ newTagName }}</van-tag>
+                                <van-tag v-else plain :type="newTagColor">{{ newTagName }}</van-tag>
+                            </template>
+                        </van-cell>
+                    </van-cell-group>
+                    <van-button @click="addNewTag">添加标签</van-button>
+                </van-popup>
+                <van-button @click="saveEditedProduct">保存</van-button>
+            </van-popup>
         </div>
     </div>
 </template>
   
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
-import { reactive } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import { reactive, toRaw } from 'vue';
 import Header from '@/components/Header.vue'
 
 const active = ref(0)
-const API_URL = 'http://45.207.55.130:3000';
+const API_URL = 'http://127.0.0.1:3000';
+// const API_URL = 'http://45.207.55.130:3000';
 const categories = reactive([]);
 const products = reactive([]);
 
@@ -91,61 +117,103 @@ onMounted(() => {
     fetchData();
 });
 
-// 修改描述内容
-const editDescription = ref('');   // 存储用户输入的新描述
-const showEditDescriptionPopup = (product) => {
-    product.showEditDescription = true;
-    editDescription.value = product.description || '';  // 初始化为当前描述或为空
+// 编辑
+const showEditPopup = ref(false); // 控制编辑popup的显示
+const editProduct = reactive({ // 存储正在编辑的产品数据
+    _id: '',
+    name: '',
+    description: '',
+    price: 0,
+    imageUrl: '',
+    tags: []
+});
+const showAddTagPopup = ref(false)
+const newTagName = ref('')
+const newTagColor = ref('primary')
+const newTagPlain = ref(false)
+
+// 打开添加标签弹出框
+function openAddTagPopup() {
+    showAddTagPopup.value = true;
 }
-async function saveDescription(product) {
-    product.description = editDescription.value;
 
-    try {
-        await axios.put(`${API_URL}/products/${product._id}`, { description: product.description });
+// 添加新标签
+async function addNewTag() {
+    // 获取 `products.value` 中的 `tags`
+    const existingTags = products.value.find(product => product._id === editProduct._id);
+    console.log('exist', existingTags.tags);
 
-    } catch (error) {
-        console.error('更新描述失败:', error);
-    }
-    editDescription.value = '';           // 清空输入框
-    product.showEditDescription = false;
-}
+    // 创建一个新标签对象
+    const newTag = {
+        name: newTagName.value,
+        type: newTagColor.value,
+        plain: newTagPlain.value,
+    };
 
-// 添加标签
-const showPopup = (product) => {
-    product.showPopup = true;
-}
-const newTag = ref('');               // 存储用户输入的新标签
+    // 将新标签添加到 `existingTags` 数组中
+    existingTags.tags.push(newTag);
 
-async function addTag(product) {
-    if (newTag.value.trim() !== '') {
-        product.tags.push(newTag.value.trim());
-        try {
-            // 向服务器发送请求，更新整个tags数组
-            await axios.put(`${API_URL}/products/${product._id}`, { tags: product.tags });
+    // 将组合后的标签数组设置回 `editProduct.tags`
+    editProduct.tags = existingTags;
 
-        } catch (error) {
-            console.error('更新标签失败:', error);
-            // 可以提供一个更友好的错误消息给用户，例如：
-            // alert('更新标签失败，请稍后再试');
-        }
-        newTag.value = '';           // 清空输入框
-        product.showPopup = false;
-    }
+    // 将新标签添加到产品的标签列表中
+    console.log('edit',editProduct.tags);
+    await axios.put(`${API_URL}/products/${editProduct._id}`, {
+        tags: editProduct.tags
+    })
+    // editProduct.tags.push(newTag);
+
+    // 清空输入框和关闭弹出框
+    newTagName.value = '';
+    newTagColor.value = 'primary';
+    newTagPlain.value = false;
+    showAddTagPopup.value = false;
 }
 
 // 删除标签
-const deleteTag = async (product, index) => {
-    product.tags.splice(index, 1)
+function deleteTag(index) {
+    // 从标签数组中删除指定索引的标签
+    editProduct.tags.splice(index, 1);
+}
+
+// const tagsString = computed({
+//     get: () => editProduct.tags.map(tag => tag.name).join(', '),
+//     set: value => {
+//         // 这里，我们只是从字符串中提取名称。你可能需要进一步的逻辑来设置类型。
+//         editProduct.tags = value.split(',').map(tagName => ({ name: tagName.trim(), type: 'defaultType' }));
+//     }
+// });
+
+function openEditPopup(product) {
+    editProduct._id = product._id;
+    editProduct.name = product.name;
+    editProduct.description = product.description;
+    editProduct.price = product.price;
+    editProduct.imageUrl = product.imageUrl;
+    editProduct.tags = product.tags;
+    showEditPopup.value = true;
+}
+
+async function saveEditedProduct() {
     try {
-        // 向服务器发送请求，更新整个tags数组
-        await axios.put(`${API_URL}/products/${product._id}`, { tags: product.tags });
+        await axios.put(`${API_URL}/products/${editProduct._id}`, {
+            name: editProduct.name,
+            description: editProduct.description,
+            price: editProduct.price,
+            tags: toRaw(editProduct.tags)
+            // 根据你的后端API，你可能还需要更新其他字段
+        });
+
+        // 这里可以重新获取产品列表以刷新数据
+        fetchData();
 
     } catch (error) {
-        console.error('更新标签失败:', error);
-        // 可以提供一个更友好的错误消息给用户，例如：
-        // alert('更新标签失败，请稍后再试');
+        console.error('更新产品失败:', error);
     }
-};
+
+    showEditPopup.value = false;
+}
+
 
 </script>
   
